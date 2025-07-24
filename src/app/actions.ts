@@ -83,8 +83,8 @@ export async function getChannelDataById(channelId: string): Promise<{ data?: Ch
     }
     const channel: YouTubeChannel = channelData.items[0];
 
-    // 2. Fetch Top 5 Most Recent Videos
-    const searchResponse = await fetch(`${BASE_URL}/search?part=snippet&channelId=${channelId}&order=date&type=video&maxResults=5&key=${API_KEY}`);
+    // 2. Fetch Top 5 Most Popular Videos
+    const searchResponse = await fetch(`${BASE_URL}/search?part=snippet&channelId=${channelId}&order=viewCount&type=video&maxResults=5&key=${API_KEY}`);
      if (!searchResponse.ok) {
         const errorData = await searchResponse.json();
         return { error: `Failed to fetch videos: ${errorData.error.message}` };

@@ -193,7 +193,7 @@ export default function Home() {
             )}
 
             <section>
-              <h3 className="text-2xl font-bold font-headline mb-4">Most Recent Videos</h3>
+              <h3 className="text-2xl font-bold font-headline mb-4">Most Popular Videos</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedChannelData.videos.map((video) => (
                   <VideoCard key={video.id} video={video} onPlay={() => setPlayingVideo(video)} />
@@ -254,5 +254,3 @@ const LoadingSkeleton = () => (
     </div>
   </div>
 );
-
-    

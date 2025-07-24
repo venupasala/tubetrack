@@ -23,13 +23,13 @@ export default function ChannelGrowthChart({ videos }: ChannelGrowthChartProps) 
       "Views": parseInt(video.statistics.viewCount, 10),
       tooltip: video.snippet.title,
     }))
-    .reverse() // Reverse to show chronological order
+    .sort((a,b) => new Date(a.name).getTime() - new Date(b.name).getTime())
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Recent Video Performance</CardTitle>
-        <CardDescription>View counts for the last 5 videos, showing recent audience engagement.</CardDescription>
+        <CardTitle>Top 5 Video Performance</CardTitle>
+        <CardDescription>View counts for the top 5 most popular videos, showing audience engagement.</CardDescription>
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={300}>
