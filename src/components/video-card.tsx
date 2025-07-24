@@ -11,13 +11,14 @@ interface VideoCardProps {
 
 export default function VideoCard({ video }: VideoCardProps) {
   const publishedDate = new Date(video.snippet.publishedAt);
+  const thumbnailUrl = video.snippet.thumbnails?.high?.url || `https://placehold.co/480x360.png`;
 
   return (
     <Card className="flex flex-col h-full overflow-hidden hover:shadow-lg hover:-translate-y-1 transition-transform duration-200">
       <CardHeader className="p-0">
         <div className="aspect-video relative">
           <Image
-            src={video.snippet.thumbnails.high.url}
+            src={thumbnailUrl}
             alt={video.snippet.title}
             fill
             className="object-cover bg-muted"
