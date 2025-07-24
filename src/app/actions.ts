@@ -53,12 +53,19 @@ export async function searchChannelsByName(query: string): Promise<{ channels?: 
       return { error: `Failed to search for channels: ${errorData.error.message}` };
     }
     const searchData = await searchResponse.json();
-    const channels: YouTubeChannel[] = searchData.items.map((item: any) => ({
-        id: item.id.channelId,
-        snippet: item.snippet
-    }));
+    const channelIds = searchData.items.map((item: any) => item.id.channelId).join(',');
+    
+    if (!channelIds) return { channels: [] };
 
-    return { channels };
+    const channelsResponse = await fetch(`${BASE_URL}/channels?part=snippet,statistics&id=${channelIds}&key=${API_KEY}`);
+    if (!channelsResponse.ok) {
+      const errorData = await channelsResponse.json();
+      return { error: `Failed to fetch channel details: ${errorData.error.message}` };
+    }
+    const channelsData = await channelsResponse.json();
+
+    return { channels: channelsData.items };
+
   } catch (error) {
     console.error("YouTube API request failed:", error);
     return { error: "An unexpected error occurred while searching for channels." };
@@ -131,5 +138,49 @@ export async function getChannelDataById(channelId: string): Promise<{ data?: Ch
   } catch (error) {
     console.error("YouTube API request failed:", error);
     return { error: "An unexpected error occurred while fetching data from YouTube." };
+  }
+}
+
+export async function getTrendingVideos(): Promise<{ videos?: YouTubeVideo[], error?: string }> {
+  if (!API_KEY) {
+    return { error: "YouTube API key is not configured. Please set the YOUTUBE_API_KEY environment variable." };
+  }
+
+  try {
+    const response = await fetch(`${BASE_URL}/videos?part=snippet,statistics&chart=mostPopular&regionCode=US&maxResults=12&key=${API_KEY}`);
+    if (!response.ok) {
+      const errorData = await response.json();
+      return { error: `Failed to fetch trending videos: ${errorData.error.message}` };
+    }
+    const data = await response.json();
+    
+    const videos: YouTubeVideo[] = data.items;
+    
+    // The trending endpoint doesn't return channel thumbnails, so we need to fetch them.
+    const channelIds = [...new Set(videos.map(v => v.snippet.channelId))].join(',');
+    const channelsResponse = await fetch(`${BASE_URL}/channels?part=snippet&id=${channelIds}&key=${API_KEY}`);
+     if (!channelsResponse.ok) {
+      // Non-fatal, we can proceed without thumbnails
+      return { videos };
+    }
+    const channelsData = await channelsResponse.json();
+    const thumbnailsMap = new Map<string, string>();
+    channelsData.items.forEach((channel: YouTubeChannel) => {
+        thumbnailsMap.set(channel.id, channel.snippet.thumbnails.default.url);
+    });
+
+    const videosWithThumbnails = videos.map(video => {
+        if(thumbnailsMap.has(video.snippet.channelId)){
+            // This is a bit of a hack, as the type doesn't expect this, but it will work for the video card.
+            (video.snippet.thumbnails as any).channelThumbnailUrl = thumbnailsMap.get(video.snippet.channelId);
+        }
+        return video;
+    });
+
+
+    return { videos: videosWithThumbnails };
+  } catch (error) {
+    console.error("YouTube API request failed:", error);
+    return { error: "An unexpected error occurred while fetching trending videos." };
   }
 }

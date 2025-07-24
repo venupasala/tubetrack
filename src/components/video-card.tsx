@@ -15,6 +15,9 @@ export default function VideoCard({ video, onPlay, channelThumbnail }: VideoCard
   const publishedDate = new Date(video.snippet.publishedAt);
   const thumbnailUrl = video.snippet.thumbnails?.high?.url || `https://placehold.co/480x360.png`;
 
+  // For trending videos, the channel thumbnail is fetched separately and attached.
+  const finalChannelThumbnail = channelThumbnail || (video.snippet.thumbnails as any).channelThumbnailUrl;
+
   return (
     <div 
       className="flex flex-col group cursor-pointer"
@@ -32,7 +35,7 @@ export default function VideoCard({ video, onPlay, channelThumbnail }: VideoCard
       </div>
       <div className="flex items-start gap-3">
         <Avatar className="mt-1">
-            <AvatarImage src={channelThumbnail} alt={video.snippet.channelTitle} />
+            <AvatarImage src={finalChannelThumbnail} alt={video.snippet.channelTitle} />
             <AvatarFallback>{video.snippet.channelTitle.charAt(0)}</AvatarFallback>
         </Avatar>
         <div className="flex flex-col">

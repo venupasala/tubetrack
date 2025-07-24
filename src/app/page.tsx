@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Loader2, Search, X, Youtube } from "lucide-react";
-import { searchChannelsByName, getChannelDataById } from "@/app/actions";
+import { searchChannelsByName, getChannelDataById, getTrendingVideos } from "@/app/actions";
 import { type ChannelData, type YouTubeChannel, type YouTubeVideo } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +28,22 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [playingVideo, setPlayingVideo] = useState<YouTubeVideo | null>(null);
+  const [trendingVideos, setTrendingVideos] = useState<YouTubeVideo[]>([]);
+  const [loadingTrending, setLoadingTrending] = useState(true);
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      setLoadingTrending(true);
+      const result = await getTrendingVideos();
+      if (result.error) {
+        setError(result.error);
+      } else {
+        setTrendingVideos(result.videos || []);
+      }
+      setLoadingTrending(false);
+    };
+    fetchTrending();
+  }, []);
 
   const handleSearchSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,6 +56,7 @@ export default function Home() {
     setSelectedChannelData(null);
     setSearchResults([]);
     setHasSearched(true);
+    setTrendingVideos([]);
 
     try {
       const result = await searchChannelsByName(query);
@@ -175,6 +192,21 @@ export default function Home() {
               <AlertTitle>No Results Found</AlertTitle>
               <AlertDescription>Your search for "{query}" did not return any channels. Please try a different name.</AlertDescription>
           </Alert>
+      );
+    }
+
+    if (loadingTrending) return <LoadingSkeleton />;
+
+    if (trendingVideos.length > 0) {
+      return (
+        <section>
+          <h3 className="text-2xl font-bold font-headline mb-4">Trending Videos</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
+            {trendingVideos.map((video) => (
+              <VideoCard key={video.id} video={video} onPlay={() => setPlayingVideo(video)} channelThumbnail={video.snippet.thumbnails.default.url} />
+            ))}
+          </div>
+        </section>
       );
     }
 
