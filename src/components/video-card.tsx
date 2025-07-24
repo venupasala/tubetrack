@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 
 interface VideoCardProps {
   video: YouTubeVideo;
-  channelThumbnail: string;
+  channelThumbnail?: string;
   onPlay: () => void;
 }
 
@@ -34,10 +34,12 @@ export default function VideoCard({ video, onPlay, channelThumbnail }: VideoCard
         />
       </div>
       <div className="flex items-start gap-3">
-        <Avatar className="mt-1">
-            <AvatarImage src={finalChannelThumbnail} alt={video.snippet.channelTitle} />
-            <AvatarFallback>{video.snippet.channelTitle.charAt(0)}</AvatarFallback>
-        </Avatar>
+        {finalChannelThumbnail &&
+          <Avatar className="mt-1">
+              <AvatarImage src={finalChannelThumbnail} alt={video.snippet.channelTitle} />
+              <AvatarFallback>{video.snippet.channelTitle.charAt(0)}</AvatarFallback>
+          </Avatar>
+        }
         <div className="flex flex-col">
             <h3 className="text-base font-medium line-clamp-2 leading-snug group-hover:text-primary/90 transition-colors">
               {video.snippet.title}

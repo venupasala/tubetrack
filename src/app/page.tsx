@@ -203,7 +203,7 @@ export default function Home() {
           <h3 className="text-2xl font-bold font-headline mb-4">Trending Videos</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-4 gap-y-8">
             {trendingVideos.map((video) => (
-              <VideoCard key={video.id} video={video} onPlay={() => setPlayingVideo(video)} channelThumbnail={video.snippet.thumbnails.default.url} />
+              <VideoCard key={video.id} video={video} onPlay={() => setPlayingVideo(video)} channelThumbnail={(video.snippet.thumbnails as any).channelThumbnailUrl} />
             ))}
           </div>
         </section>
@@ -224,13 +224,25 @@ export default function Home() {
     <div className="flex h-screen bg-background">
       <Sidebar />
       <div className="flex flex-col flex-1">
-        <Header 
-          query={query}
-          setQuery={setQuery}
-          handleSearchSubmit={handleSearchSubmit}
-          loading={loading}
-        />
+        <Header />
         <main className="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8">
+          <div className="max-w-7xl mx-auto">
+            <section className="mb-8">
+                <form onSubmit={handleSearchSubmit} className="w-full max-w-2xl mx-auto flex items-center">
+                    <Input
+                        type="text"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        placeholder="Search by channel name, handle (@handle), or ID..."
+                        className="rounded-r-none focus:ring-0 text-base border-r-0 h-12 text-lg"
+                        disabled={loading}
+                    />
+                    <Button type="submit" disabled={loading} className="rounded-l-none h-12 px-6" variant="default">
+                        {loading ? <Loader2 className="animate-spin" /> : <Search />}
+                    </Button>
+                </form>
+            </section>
+            
             <div className="h-full">
               {renderContent()}
             </div>
@@ -244,6 +256,7 @@ export default function Home() {
                 </DialogContent>
               </Dialog>
             )}
+          </div>
         </main>
       </div>
     </div>
