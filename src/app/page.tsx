@@ -12,7 +12,8 @@ import ChannelStats from "@/components/channel-stats";
 import VideoCard from "@/components/video-card";
 import AiGuidance from "@/components/ai-guidance";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
+import ChannelGrowthChart from "@/components/channel-growth-chart";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -184,8 +185,12 @@ export default function Home() {
 
             {selectedChannelData.aiGuidance && <AiGuidance guidance={selectedChannelData.aiGuidance} />}
 
+            {selectedChannelData.videos && selectedChannelData.videos.length > 0 && (
+              <ChannelGrowthChart videos={selectedChannelData.videos} />
+            )}
+
             <section>
-              <h3 className="text-2xl font-bold font-headline mb-4">Most Viewed Videos</h3>
+              <h3 className="text-2xl font-bold font-headline mb-4">Most Recent Videos</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedChannelData.videos.map((video) => (
                   <VideoCard key={video.id} video={video} />
@@ -221,6 +226,9 @@ const LoadingSkeleton = () => (
       <Skeleton className="h-24 rounded-xl" />
       <Skeleton className="h-24 rounded-xl" />
       <Skeleton className="h-24 rounded-xl" />
+    </div>
+    <div>
+      <Skeleton className="h-64 rounded-xl" />
     </div>
     <div>
       <Skeleton className="h-8 w-1/3 mb-4" />

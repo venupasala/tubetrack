@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { format, formatDistanceToNow } from "date-fns";
-import { Eye } from "lucide-react";
+import { Eye, ThumbsUp } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import type { YouTubeVideo } from "@/lib/types";
 import { formatNumber } from "@/lib/utils";
@@ -33,9 +33,15 @@ export default function VideoCard({ video }: VideoCardProps) {
         </CardTitle>
       </CardContent>
       <CardFooter className="p-4 pt-0 text-sm text-muted-foreground flex justify-between items-center">
-        <div className="flex items-center gap-1.5">
-          <Eye className="w-4 h-4" />
-          <span>{video.statistics ? formatNumber(video.statistics.viewCount) : 'N/A'} views</span>
+        <div className="flex items-center gap-4">
+            <div className="flex items-center gap-1.5">
+                <Eye className="w-4 h-4" />
+                <span>{video.statistics ? formatNumber(video.statistics.viewCount) : 'N/A'}</span>
+            </div>
+             <div className="flex items-center gap-1.5">
+                <ThumbsUp className="w-4 h-4" />
+                <span>{video.statistics ? formatNumber(video.statistics.likeCount) : 'N/A'}</span>
+            </div>
         </div>
         <div title={format(publishedDate, "PPP")}>
           {formatDistanceToNow(publishedDate, { addSuffix: true })}
