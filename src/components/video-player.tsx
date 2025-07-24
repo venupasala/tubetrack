@@ -6,7 +6,7 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
   return (
     <div className="aspect-video w-full">
       <iframe
-        src={`https://www.youtube.com/embed/${videoId}?autoplay=1`}
+        src={`https://www.youtube.com/embed/${videoId}?autoplay=1&rel=0`}
         title="YouTube video player"
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
@@ -16,5 +16,3 @@ export default function VideoPlayer({ videoId }: VideoPlayerProps) {
     </div>
   );
 }
-
-    
