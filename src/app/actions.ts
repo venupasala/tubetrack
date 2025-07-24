@@ -7,32 +7,70 @@ const API_KEY = process.env.YOUTUBE_API_KEY;
 const BASE_URL = "https://www.googleapis.com/youtube/v3";
 
 async function getChannelIdFromHandle(handle: string): Promise<string | null> {
+  if (!API_KEY) return null;
   const handleWithoutAt = handle.startsWith('@') ? handle.substring(1) : handle;
   const response = await fetch(`${BASE_URL}/channels?part=id&forHandle=${handleWithoutAt}&key=${API_KEY}`);
-  if (!response.ok) {
-    return null;
-  }
+  if (!response.ok) return null;
   const data = await response.json();
   return data.items?.[0]?.id || null;
 }
 
-export async function getChannelData(handleOrId: string): Promise<{ data?: ChannelData, error?: string }> {
+export async function searchChannelsByName(query: string): Promise<{ channels?: YouTubeChannel[], error?: string }> {
   if (!API_KEY) {
     return { error: "YouTube API key is not configured. Please set the YOUTUBE_API_KEY environment variable." };
   }
 
-  let channelId = handleOrId;
-
-  try {
-    // If it looks like a handle, try to get the channel ID from it.
-    if (handleOrId.startsWith('@')) {
-      const id = await getChannelIdFromHandle(handleOrId);
-      if (!id) {
-        return { error: `Could not find a YouTube channel with the handle "${handleOrId}".` };
+  // If it's a handle, get the ID and fetch the single channel
+  if (query.startsWith('@')) {
+    const channelId = await getChannelIdFromHandle(query);
+    if (channelId) {
+      const channelResponse = await fetch(`${BASE_URL}/channels?part=snippet,statistics&id=${channelId}&key=${API_KEY}`);
+       if (!channelResponse.ok) {
+        const errorData = await channelResponse.json();
+        return { error: `Failed to fetch channel data: ${errorData.error.message}` };
       }
-      channelId = id;
+      const channelData = await channelResponse.json();
+      return { channels: channelData.items };
     }
+  }
 
+  // If it's a channel ID, fetch the single channel
+  if (query.startsWith('UC') && query.length === 24) {
+      const channelResponse = await fetch(`${BASE_URL}/channels?part=snippet,statistics&id=${query}&key=${API_KEY}`);
+       if (channelResponse.ok) {
+        const channelData = await channelResponse.json();
+        if(channelData.items && channelData.items.length > 0) {
+            return { channels: channelData.items };
+        }
+      }
+  }
+  
+  // Otherwise, search by query text
+  try {
+    const searchResponse = await fetch(`${BASE_URL}/search?part=snippet&q=${query}&type=channel&maxResults=10&key=${API_KEY}`);
+    if (!searchResponse.ok) {
+      const errorData = await searchResponse.json();
+      return { error: `Failed to search for channels: ${errorData.error.message}` };
+    }
+    const searchData = await searchResponse.json();
+    const channels: YouTubeChannel[] = searchData.items.map((item: any) => ({
+        id: item.id.channelId,
+        snippet: item.snippet
+    }));
+
+    return { channels };
+  } catch (error) {
+    console.error("YouTube API request failed:", error);
+    return { error: "An unexpected error occurred while searching for channels." };
+  }
+}
+
+export async function getChannelDataById(channelId: string): Promise<{ data?: ChannelData, error?: string }> {
+  if (!API_KEY) {
+    return { error: "YouTube API key is not configured. Please set the YOUTUBE_API_KEY environment variable." };
+  }
+  
+  try {
     // 1. Fetch Channel Details and Statistics
     const channelResponse = await fetch(`${BASE_URL}/channels?part=snippet,statistics&id=${channelId}&key=${API_KEY}`);
     if (!channelResponse.ok) {
@@ -41,7 +79,7 @@ export async function getChannelData(handleOrId: string): Promise<{ data?: Chann
     }
     const channelData = await channelResponse.json();
     if (!channelData.items || channelData.items.length === 0) {
-      return { error: "YouTube channel not found. Please check the Channel ID or Handle." };
+      return { error: "YouTube channel not found." };
     }
     const channel: YouTubeChannel = channelData.items[0];
 
