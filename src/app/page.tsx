@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Loader2, Search, X } from "lucide-react";
 import { searchChannelsByName, getChannelDataById } from "@/app/actions";
-import { type ChannelData, type YouTubeChannel } from "@/lib/types";
+import { type ChannelData, type YouTubeChannel, type YouTubeVideo } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -14,6 +14,8 @@ import AiGuidance from "@/components/ai-guidance";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card } from "@/components/ui/card";
 import ChannelGrowthChart from "@/components/channel-growth-chart";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import VideoPlayer from "@/components/video-player";
 
 export default function Home() {
   const [query, setQuery] = useState("");
@@ -23,6 +25,7 @@ export default function Home() {
   const [loadingChannel, setLoadingChannel] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
+  const [playingVideo, setPlayingVideo] = useState<YouTubeVideo | null>(null);
 
   const handleSearchSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -193,7 +196,7 @@ export default function Home() {
               <h3 className="text-2xl font-bold font-headline mb-4">Most Recent Videos</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {selectedChannelData.videos.map((video) => (
-                  <VideoCard key={video.id} video={video} />
+                  <VideoCard key={video.id} video={video} onPlay={() => setPlayingVideo(video)} />
                 ))}
               </div>
             </section>
@@ -205,6 +208,17 @@ export default function Home() {
                 <AlertTitle>No Results Found</AlertTitle>
                 <AlertDescription>Your search for "{query}" did not return any channels. Please try a different name.</AlertDescription>
             </Alert>
+        )}
+
+        {playingVideo && (
+          <Dialog open={!!playingVideo} onOpenChange={(isOpen) => !isOpen && setPlayingVideo(null)}>
+            <DialogContent className="max-w-4xl p-0">
+              <DialogHeader className="p-4">
+                <DialogTitle>{playingVideo.snippet.title}</DialogTitle>
+              </DialogHeader>
+              <VideoPlayer videoId={playingVideo.id} />
+            </DialogContent>
+          </Dialog>
         )}
       </div>
     </main>
@@ -240,3 +254,5 @@ const LoadingSkeleton = () => (
     </div>
   </div>
 );
+
+    
