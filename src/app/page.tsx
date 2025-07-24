@@ -14,15 +14,15 @@ import AiGuidance from "@/components/ai-guidance";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
-  const [channelId, setChannelId] = useState("");
+  const [query, setQuery] = useState("");
   const [data, setData] = useState<ChannelData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!channelId.trim()) {
-      setError("Please enter a YouTube Channel ID.");
+    if (!query.trim()) {
+      setError("Please enter a YouTube Channel ID or Handle.");
       return;
     }
     setLoading(true);
@@ -30,7 +30,7 @@ export default function Home() {
     setData(null);
 
     try {
-      const result = await getChannelData(channelId);
+      const result = await getChannelData(query);
       if (result.error) {
         setError(result.error);
       } else if (result.data) {
@@ -51,16 +51,16 @@ export default function Home() {
             TubeTrack
           </h1>
           <p className="text-muted-foreground mt-2 text-lg">
-            Enter a YouTube Channel ID to get its latest stats and top videos.
+            Enter a YouTube Channel ID or Handle to get its latest stats and top videos.
           </p>
         </header>
 
         <form onSubmit={handleSubmit} className="flex w-full gap-2 mb-8">
           <Input
             type="text"
-            value={channelId}
-            onChange={(e) => setChannelId(e.target.value)}
-            placeholder="Enter YouTube Channel ID (e.g., UC_x5XG1OV2P6uZZ5FSM9Ttw)"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Enter Channel Handle (e.g., @MrBeast) or ID"
             className="flex-grow text-base"
             disabled={loading}
           />
